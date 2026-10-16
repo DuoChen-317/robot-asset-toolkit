@@ -1,0 +1,4 @@
+interface:
+  display_name: "Robot Asset Toolkit"
+  short_description: "CAD, GLB, URDF and articulated USD asset workflows"
+  default_prompt: "Use $robot-asset-toolkit to inspect my robot assets, perform the requested conversion or assembly, and validate the final deliverable."

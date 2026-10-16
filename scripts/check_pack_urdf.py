@@ -46,7 +46,9 @@ def resolve_mesh(uri, urdf, packages):
     if uri.startswith('package://'):
         package, sep, relative = uri[10:].partition('/')
         require(sep and package in packages, f'Unmapped {uri}; supply --package {package}=directory')
-        root = packages[package]
+        # Canonicalize both sides: Windows temporary paths can contain short
+        # names or junctions, and callers may pass relative package directories.
+        root = Path(packages[package]).expanduser().resolve()
         path = (root / unquote(relative)).resolve()
         require(path.is_relative_to(root), f'Package URI escapes its package: {uri}')
     elif uri.startswith('file://'):

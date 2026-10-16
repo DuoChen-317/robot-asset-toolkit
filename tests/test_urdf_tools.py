@@ -75,6 +75,16 @@ class BundleChecks(unittest.TestCase):
             helper.pack(self.urdf, {}, destination, None)
         self.assertEqual(marker.read_text(), 'keep')
 
+    def test_package_root_is_resolved_before_containment_check(self):
+        (self.root / 'nested').mkdir()
+        package_root = self.root / 'nested' / '..'
+        uri = 'package://robot_description/part.stl'
+        resolved = helper.resolve_mesh(uri, self.urdf, {'robot_description': package_root})
+        self.assertEqual(resolved, (self.root / 'part.stl').resolve())
+        with self.assertRaisesRegex(ValueError, 'escapes'):
+            helper.resolve_mesh('package://robot_description/../outside.stl',
+                                self.urdf, {'robot_description': package_root})
+
     def test_primitive_only(self):
         self.urdf.write_text('<robot name="primitive"><link name="base"><visual><geometry><box size="1 1 1"/></geometry></visual></link></robot>',encoding='utf-8')
         report = helper.pack(self.urdf, {}, self.root / 'primitive', None)

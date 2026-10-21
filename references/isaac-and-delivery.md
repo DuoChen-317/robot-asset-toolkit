@@ -10,7 +10,7 @@ Record merge-fixed-joints, fixed-base, convex decomposition, self-collision, ine
 
 ## Bounded validation
 
-Use a separate process/output and a reasonable timeout. Do not reuse streaming ports, overwrite verified assets or terminate other workloads.
+Stage candidates under the shared workspace's `intermediate/`, with logs and reports in that workspace; see [project-layout.md](project-layout.md). Publish the complete USD and its dependencies after validation. Use a separate process and a reasonable timeout. Do not reuse streaming ports, overwrite verified assets or terminate other workloads.
 
 1. Record input identity and remove conflicting Python/conda environment settings only for the new process. Check available GPU resources and the runtime's device numbering.
 2. Check importer return state and actual USD output, not just the shell exit status.

@@ -1,9 +1,13 @@
 import importlib.util
+import contextlib
+import io
 import math
 import struct
+import sys
 import tempfile
 import unittest
 import zipfile
+from unittest.mock import patch
 from pathlib import Path
 
 skill = Path(__file__).resolve().parents[1]
@@ -34,6 +38,29 @@ class BundleChecks(unittest.TestCase):
         with zipfile.ZipFile(archive) as bundle:
             self.assertEqual(bundle.read('final/meshes/part.stl'), self.mesh)
         self.assertTrue(report['archive']['internal_meshes_checked'])
+        self.assertEqual({p.name for p in destination.iterdir()}, {'robot.urdf', 'meshes', 'README.txt'})
+        self.assertEqual(list((self.root / '_conversion_work' / 'intermediate').iterdir()), [])
+
+    def test_existing_work_directory_is_reused(self):
+        workspace = self.root / 'pipeline'
+        helper.pack(self.urdf, {}, self.root / 'final', None, workspace)
+        self.assertTrue(workspace.is_dir())
+        self.assertFalse((self.root / '_conversion_work').exists())
+
+    def test_process_outputs_cannot_enter_final_asset(self):
+        for flag, relative, error in (
+            ('--zip', 'bundle.zip', 'ZIP must be outside'),
+            ('--report', 'check.json', 'Report must be outside'),
+            ('--work-dir', 'work', 'Work directory must be outside'),
+        ):
+            with self.subTest(flag=flag):
+                destination = self.root / ('reject_' + flag[2:])
+                argv = ['check_pack_urdf.py', 'pack', str(self.urdf), '--out', str(destination), flag, str(destination / relative)]
+                stderr = io.StringIO()
+                with patch.object(sys, 'argv', argv), contextlib.redirect_stderr(stderr):
+                    self.assertEqual(helper.main(), 1)
+                self.assertIn(error, stderr.getvalue())
+                self.assertFalse(destination.exists())
 
     def test_tsd_and_truncation_rejected(self):
         for content in (b'%TSD-Header-###%' + bytes(200), self.mesh[:-1]):

@@ -61,7 +61,7 @@ def node_snapshot():
         }
     return result
 
-report_path = Path(config['output']).with_suffix('.validation.json')
+report_path = Path(config['validation_path'])
 validation = []
 for metadata in [INTERMEDIATE / 'scene.json']:
     info = json.loads(metadata.read_text(encoding='utf-8'))

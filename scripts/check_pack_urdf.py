@@ -17,6 +17,10 @@ import zipfile
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+# Bundled Python runtimes may omit the script directory from sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from artifact_layout import resolve_work_dir
+
 
 def require(condition, message):
     if not condition:
@@ -46,8 +50,7 @@ def resolve_mesh(uri, urdf, packages):
     if uri.startswith('package://'):
         package, sep, relative = uri[10:].partition('/')
         require(sep and package in packages, f'Unmapped {uri}; supply --package {package}=directory')
-        # Canonicalize both sides: Windows temporary paths can contain short
-        # names or junctions, and callers may pass relative package directories.
+        # Canonicalize package roots before containment checks.
         root = Path(packages[package]).expanduser().resolve()
         path = (root / unquote(relative)).resolve()
         require(path.is_relative_to(root), f'Package URI escapes its package: {uri}')
@@ -181,7 +184,10 @@ def load_check(urdf, packages):
     return root, blobs, report
 
 
-def pack(urdf, packages, out, archive_path):
+def pack(urdf, packages, out, archive_path, work_dir=None):
+    work_dir = resolve_work_dir(out, work_dir)
+    require(archive_path is None or not archive_path.is_relative_to(out),
+            'ZIP must be outside the final asset directory; use a sibling path or packages/')
     root, blobs, report = load_check(urdf, packages)
     require(not root.findall('.//texture'), 'Automatic pack does not collect textures; explicitly package materials/textures instead')
     require(all(path.suffix.lower() == '.stl' for path in blobs), 'Automatic pack currently supports binary STL only; preserve other mesh dependency trees manually')
@@ -209,12 +215,12 @@ def pack(urdf, packages, out, archive_path):
         'Source warnings:\n' + '\n'.join(report['warnings']) + '\n'
     ).encode('utf-8')
     if archive_path is not None:
-        if archive_path.is_relative_to(out):
-            require(archive_path.relative_to(out).as_posix() not in payload, 'Archive path collides with a bundle member')
         archive_path.parent.mkdir(parents=True, exist_ok=True)
     # Validate the newly serialized XML and actual staged files before publishing.
     out.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='urdf-stage-', dir=out.parent) as temporary:
+    intermediates = work_dir / 'intermediate'
+    intermediates.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='urdf-stage-', dir=intermediates) as temporary:
         stage = Path(temporary)
         for name, data in payload.items():
             path = stage / name
@@ -251,16 +257,24 @@ def main():
     parser.add_argument('--out', type=Path, help='Empty/new destination directory for pack')
     parser.add_argument('--zip', type=Path, dest='archive', help='Optional new ZIP path for pack')
     parser.add_argument('--report', type=Path, help='Optional new JSON report path')
+    parser.add_argument('--work-dir', type=Path, help='Separate process workspace for pack; defaults to a sibling _conversion_work')
     args = parser.parse_args()
     try:
         require(args.report is None or not args.report.exists(), 'Refusing existing report')
         urdf, packages = args.urdf.expanduser().resolve(), package_map(args.package)
         if args.mode == 'pack':
             require(args.out is not None, '--out is required for pack')
-            report = pack(urdf, packages, args.out.expanduser().resolve(),
-                          args.archive.expanduser().resolve() if args.archive else None)
+            out = args.out.expanduser().resolve()
+            archive = args.archive.expanduser().resolve() if args.archive else None
+            if args.report:
+                args.report = args.report.expanduser().resolve()
+                require(not args.report.is_relative_to(out),
+                        'Report must be outside the final asset directory; use the work directory reports/')
+                require(args.report != archive, 'Report and ZIP paths must differ')
+            report = pack(urdf, packages, out, archive, args.work_dir)
         else:
-            require(args.out is None and args.archive is None, '--out/--zip only apply to pack')
+            require(args.out is None and args.archive is None and args.work_dir is None,
+                    '--out/--zip/--work-dir only apply to pack')
             _, _, report = load_check(urdf, packages)
         text = json.dumps(report, ensure_ascii=False, indent=2)
         if args.report:

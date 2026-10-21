@@ -7,6 +7,7 @@ venv/
 .DS_Store
 Thumbs.db
 test-work/
+_conversion_work/
 final_urdf/
 final_usd/
 *.step

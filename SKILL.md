@@ -7,6 +7,10 @@ description: Convert STEP/STP to high-fidelity GLB, assemble robots and end effe
 
 Turn source geometry and assembly intent into editable models and validated robot assets. Continue from the user's current stage. Respond in the user's language; these English instructions do not require English conversation.
 
+## Project and artifact layout
+
+Before generating files, read [project-layout.md](references/project-layout.md) and reuse the user's directories. No fixed input folder such as `source/` is required. Keep original inputs, final assets and process artifacts separate. GLB output folders hold only final GLBs; URDF/USD deliveries include their necessary dependencies. Use one shared workspace for reports, scripts, logs, previews and failed/previous versions. Create only directories needed for the task.
+
 ## Choose the entry point
 
 | Request | Workflow |
@@ -73,16 +77,16 @@ If a runtime is unavailable, state the completed validation layer. An XML parser
 Run from this skill's root, or use absolute script paths:
 
 ```sh
-python scripts/check_pack_urdf.py validate /path/to/robot.urdf
+python scripts/check_pack_urdf.py validate /path/to/robot.urdf --report /project/_conversion_work/reports/urdf-check.json
 python scripts/check_pack_urdf.py validate /path/to/robot.urdf --package robot_description=/path/to/robot_description
-python scripts/check_pack_urdf.py pack /path/to/robot.urdf --out /path/to/final_urdf --zip /path/to/final_urdf.zip
+python scripts/check_pack_urdf.py pack /path/to/robot.urdf --out /project/final_urdf --work-dir /project/_conversion_work --report /project/_conversion_work/reports/urdf-pack.json --zip /project/packages/robot.zip
 ```
 
-`--package` is repeatable. Packing preserves geometry, scales, joints and inertial values while rewriting mesh paths. Automatic packing supports binary STL and primitive-only URDF, not textured/non-STL dependency trees. Expand Xacro first. The checker does not compute assembly transforms, validate physical parameters or test collisions/controllers. Existing nonempty outputs and archives are refused; select a new destination or resolve the explicitly intended update rather than blindly retrying.
+`--package` is repeatable. Packing preserves geometry, scales, joints and inertial values while rewriting mesh paths. Automatic packing supports binary STL and primitive-only URDF, not textured/non-STL dependency trees. Expand Xacro first. The checker does not compute assembly transforms, validate physical parameters or test collisions/controllers. ZIPs and detailed reports must stay outside the final asset directory. Existing nonempty outputs, reports and archives are refused; select a clear new destination or resolve the explicitly intended update rather than blindly retrying.
 
 ## Final delivery
 
-Use the requested layout. Otherwise suggest `final_urdf/` with one clear URDF entry, its meshes/resources and brief instructions; for USD use `final_usd/` with one entry layer and all required dependencies. Keep scripts, logs, failed candidates and backups outside the deliverable. Do not remove unrelated user work.
+Follow [project-layout.md](references/project-layout.md). Otherwise suggest `final_urdf/` or `final_usd/` with a clear entry per asset/configuration, required dependencies and brief instructions. Requested ZIPs default to `packages/`. Keep detailed reports, scripts, logs, failed candidates and backups in the shared workspace. Final assets must not reference temporary workspace files. Do not remove unrelated user work.
 
 Read the ZIP contents and validate their actual mesh data after packing. Transfer hashes prove transport integrity, not format correctness. Authorized remote delivery requires hash checks, extraction and resource validation, with recoverable replacement of existing assets. Flattening USD does not embed external textures.
 

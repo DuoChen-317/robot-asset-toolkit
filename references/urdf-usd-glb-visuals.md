@@ -71,4 +71,4 @@ Visual composition should not introduce new rigid bodies, drives or collision. H
 
 State unexecuted checks explicitly. Preserve failures and the existing production asset; replace only the authorized destination after validation and recoverable backup.
 
-Use the existing asset-library layout or `final_usd/` with one clear entry and dependencies. Flattening does not embed external textures. Report sources/hashes, importers/converters, physical baseline, mapping, unit/frame transformations, appearance policy, checks and remaining gaps.
+Use the existing asset-library layout or `final_usd/` with one clear entry and dependencies, following [project-layout.md](project-layout.md). Keep conversion baselines, candidates, test scenes, mapping tables and detailed reports in the shared workspace; final references must not point to temporary staging. Flattening does not embed external textures. Report sources/hashes, importers/converters, physical baseline, mapping, unit/frame transformations, appearance policy, checks and remaining gaps.

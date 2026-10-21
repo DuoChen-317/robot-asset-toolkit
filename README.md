@@ -57,6 +57,7 @@ Install FreeCAD and Blender separately and supply their actual executable paths:
 python scripts/step_to_glb.py input.step output.glb \
   --freecad-python /path/to/freecad/python \
   --blender /path/to/blender \
+  --work-dir /project/_conversion_work \
   --linear-mm 0.01 --angle-deg 5
 ```
 
@@ -66,10 +67,11 @@ PowerShell example:
 python scripts/step_to_glb.py 'D:/models/input.step' 'D:/exports/output.glb' `
   --freecad-python 'C:/Apps/FreeCAD/bin/python.exe' `
   --blender 'C:/Apps/Blender/blender.exe' `
+  --work-dir 'D:/models/_conversion_work' `
   --linear-mm 0.01 --angle-deg 5
 ```
 
-Outputs: the GLB plus `.conversion.json` and `.validation.json` sidecars. Existing outputs are refused. Source CAD is unchanged; there is no general decimation or automatic recentering/uprighting. Repeated-index degenerate triangles are removed and counted.
+The final output directory contains only verified GLBs. Conversion and validation JSON reports go to `<work-dir>/reports/`; temporary GLBs are validated in the workspace before publication. `--work-dir` defaults to `_conversion_work/` beside the output directory; specify it to reuse an existing workspace. Existing outputs/reports are refused. Source CAD is unchanged; there is no general decimation or automatic recentering/uprighting. Repeated-index degenerate triangles are removed and counted.
 
 `0.01 mm` and `5°` are configurable starting settings, **not a measured global surface-error guarantee**. Round-trip checks cover parts, triangles, actual vertex bounds, hierarchy, node transforms and readable material colours. See [conversion details and limitations](references/step-to-glb.md).
 
@@ -85,10 +87,15 @@ python scripts/check_pack_urdf.py validate /path/to/robot.urdf \
 
 ```sh
 python scripts/check_pack_urdf.py pack /path/to/robot.urdf \
-  --out /path/to/final_urdf --zip /path/to/final_urdf.zip
+  --out /project/final_urdf \
+  --work-dir /project/_conversion_work \
+  --report /project/_conversion_work/reports/urdf-pack.json \
+  --zip /project/packages/robot.zip
 ```
 
 The bundle contains `robot.urdf`, required meshes and a short usage note. Mesh paths become relative; numerical mechanism and inertial definitions remain unchanged. An optional `--report /path/to/new-report.json` writes the validation report. `--package` may be repeated in either mode.
+
+ZIP archives and detailed reports stay outside the final asset directory. Reuse the project's existing input/output names; no `source/` folder or fixed project hierarchy is required. Only create directories needed for the current task. See the shared [project layout policy](references/project-layout.md) for GLB, assembly, URDF and USD deliveries.
 
 Automatic packing supports **binary STL and primitive-only URDF**. ASCII STL must first be converted with a mesh loader. Textured/non-STL dependency trees require explicit packaging. Expand Xacro before running the checker. Primitive dimensions, mass/inertia correctness, mimic semantics, collisions, controller behaviour and simulator compatibility are outside its static checks.
 

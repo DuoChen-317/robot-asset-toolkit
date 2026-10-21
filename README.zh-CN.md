@@ -57,6 +57,7 @@ skill 主体和技术说明使用英文；Agent 应按用户的语言回复，�
 python scripts/step_to_glb.py input.step output.glb \
   --freecad-python /path/to/freecad/python \
   --blender /path/to/blender \
+  --work-dir /project/_conversion_work \
   --linear-mm 0.01 --angle-deg 5
 ```
 
@@ -66,10 +67,11 @@ PowerShell 示例：
 python scripts/step_to_glb.py 'D:/models/input.step' 'D:/exports/output.glb' `
   --freecad-python 'C:/Apps/FreeCAD/bin/python.exe' `
   --blender 'C:/Apps/Blender/blender.exe' `
+  --work-dir 'D:/models/_conversion_work' `
   --linear-mm 0.01 --angle-deg 5
 ```
 
-输出为 GLB 及同名 `.conversion.json`、`.validation.json`，拒绝覆盖已有结果。源 CAD 保留，不做一般减面，也不自动摆正或居中；重复顶点索引形成的退化三角形会清理并记录数量。
+最终输出目录只放验证通过的 GLB；转换和校验 JSON 报告放在 `<工作目录>/reports/`。GLB 先在工作目录暂存并验证，再发布到最终目录。`--work-dir` 默认是输出目录旁的 `_conversion_work/`，已有过程目录时传入该路径复用。拒绝覆盖已有模型和报告。源 CAD 保留，不做一般减面，也不自动摆正或居中；重复顶点索引形成的退化三角形会清理并记录数量。
 
 `0.01 mm` 和 `5°` 是可调整的起点，**不是全模型曲面误差的实测保证**。回读检查覆盖部件数、面数、实际顶点包围盒、层级、节点变换与可读取材质颜色。详见[转换细节与限制](references/step-to-glb.md)。
 
@@ -85,10 +87,15 @@ python scripts/check_pack_urdf.py validate /path/to/robot.urdf \
 
 ```sh
 python scripts/check_pack_urdf.py pack /path/to/robot.urdf \
-  --out /path/to/final_urdf --zip /path/to/final_urdf.zip
+  --out /project/final_urdf \
+  --work-dir /project/_conversion_work \
+  --report /project/_conversion_work/reports/urdf-pack.json \
+  --zip /project/packages/robot.zip
 ```
 
 结果包含 `robot.urdf`、所需网格和简短说明。网格路径改为相对路径，原有机构参数、惯量和几何数据保持不变。可用 `--report /path/to/new-report.json` 保存报告；两种模式的 `--package` 都可重复传入。
+
+ZIP 和详细报告保存在最终资产目录外。输入、输出文件夹沿用具体项目的名称，不要求 `source/` 或固定层级；只创建当前任务需要的目录。GLB、装配、URDF 和 USD 共用的规则见[项目结构规范](references/project-layout.md)。
 
 自动打包支持 **二进制 STL 和仅使用基本几何体的 URDF**。ASCII STL 需先用网格工具转换；带图片纹理或其他格式网格的依赖需显式收集。Xacro 先展开。静态检查不验证基本几何体尺寸、真实惯量、mimic 耦合语义、碰撞、控制能力或模拟器兼容性。
 

@@ -3,9 +3,15 @@
 import argparse
 import json
 import math
+import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
+
+# Bundled Python runtimes may omit the script directory from sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from artifact_layout import resolve_work_dir
 
 
 def main():
@@ -14,6 +20,8 @@ def main():
     parser.add_argument('output', type=Path)
     parser.add_argument('--freecad-python', required=True, type=Path)
     parser.add_argument('--blender', required=True, type=Path)
+    parser.add_argument('--work-dir', type=Path,
+                        help='Separate process workspace; defaults to a sibling _conversion_work directory')
     parser.add_argument('--linear-mm', type=float, default=0.01)
     parser.add_argument('--angle-deg', type=float, default=5.0)
     parser.add_argument('--roundtrip-mm', type=float, default=0.001)
@@ -33,19 +41,29 @@ def main():
     for executable in (args.freecad_python, args.blender):
         if not executable.is_file():
             parser.error('Executable missing: ' + str(executable))
-    conversion = output.with_suffix('.conversion.json')
-    validation = output.with_suffix('.validation.json')
+    try:
+        work_dir = resolve_work_dir(output.parent, args.work_dir)
+    except ValueError as exc:
+        parser.error(str(exc))
+    reports = work_dir / 'reports'
+    conversion = reports / (output.stem + '.conversion.json')
+    validation = reports / (output.stem + '.validation.json')
     for target in (output, conversion, validation):
         if target.exists():
             parser.error('Refusing existing output: ' + str(target))
     output.parent.mkdir(parents=True, exist_ok=True)
+    reports.mkdir(parents=True, exist_ok=True)
+    intermediates = work_dir / 'intermediate'
+    intermediates.mkdir(parents=True, exist_ok=True)
     scripts = Path(__file__).resolve().parent
     # Intermediates are kept out of the user's final asset folder.
-    with tempfile.TemporaryDirectory(prefix='step-glb-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='step-glb-', dir=intermediates) as temporary:
         work = Path(temporary)
+        staged_output = work / output.name
         config = work / 'config.json'
         config.write_text(json.dumps({
-            'source': str(source), 'output': str(output), 'work': str(work),
+            'source': str(source), 'output': str(staged_output), 'work': str(work),
+            'validation_path': str(validation),
             'linear_mm': args.linear_mm, 'angle_deg': args.angle_deg,
             'roundtrip_mm': args.roundtrip_mm,
         }), encoding='utf-8')
@@ -56,11 +74,14 @@ def main():
                         '--', str(config)], check=True, timeout=args.timeout)
         info = json.loads((work / 'scene.json').read_text(encoding='utf-8'))
         result = json.loads(validation.read_text(encoding='utf-8'))
-        if result.get('result') != 'PASS' or not output.is_file():
+        if result.get('result') != 'PASS' or not staged_output.is_file():
             raise RuntimeError('Conversion did not produce verified GLB')
         info.pop('binary', None)
         info['output'] = str(output)
         conversion.write_text(json.dumps(info, ensure_ascii=False, indent=2), encoding='utf-8')
+        if output.exists():
+            raise FileExistsError('Refusing existing output: ' + str(output))
+        shutil.move(str(staged_output), str(output))
     print('Verified GLB:', output, flush=True)
     print('Validation:', validation, flush=True)
 

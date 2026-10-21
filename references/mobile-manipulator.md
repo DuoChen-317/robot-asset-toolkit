@@ -59,7 +59,7 @@ Check arm clearance against chassis, mounts, sensors and payload zones. Record d
 4. Move the base and verify the mounted arm/tool follow it, including lift/turntable motion. Test the requested folded/extended/payload conditions.
 5. Record driven/passive wheel, steering, lift and arm joints separately from free-root state and planning coordinates. Do not prescribe six or nine total DOFs universally.
 
-Deliver one whole-robot entry point, resources and necessary configuration with frame conventions, base settings, drive interface and actual test scope. Limited smoke tests do not prove all-condition stability.
+Deliver one whole-robot entry point, resources and necessary configuration with frame conventions, base settings, drive interface and actual test scope. Use the shared [project layout policy](project-layout.md) for final dependencies and process artifacts. Limited smoke tests do not prove all-condition stability.
 
 Stop-and-operate tasks may coordinate arrival, stabilization/docking, workpiece localization, arm work, retraction and departure. Base localization error contributes to operation error; consider task-appropriate vision/fixtures/docking instead of treating arm repeatability as whole-system accuracy. Simultaneous base/arm motion requires separately validated whole-body planning and execution.
 

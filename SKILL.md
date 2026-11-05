@@ -1,11 +1,11 @@
 ---
 name: robot-asset-toolkit
-description: Convert STEP/STP to high-fidelity GLB, assemble robots and end effectors, create or extend URDF, and combine URDF physics with GLB visuals in articulated USD. Use for CAD tessellation, interface alignment, link/joint frames, mobile manipulators, material transfer, Isaac Sim validation, and clean asset delivery. Navigation stacks, task scheduling, and automatic controller development are separate work.
+description: Build reusable robot and assembly simulation assets from CAD, GLB, URDF and USD. Use for precision conversion, robot/tool assembly, articulated USD, connector insertion and latch release, flexible cables and FEM spring fingers, contact validation, and rendering recorded physics with synchronized material and collision views. Navigation, general robot policy training and arbitrary controller synthesis are separate work.
 ---
 
-# Robot Asset Toolkit
+# Robot Asset & Assembly Simulation Toolkit
 
-Turn source geometry and assembly intent into editable models and validated robot assets. Continue from the user's current stage. Respond in the user's language; these English instructions do not require English conversation.
+Turn source geometry and assembly intent into editable models, reusable physics assets and evidenced assembly tests. Keep the repository and invocation name `robot-asset-toolkit`. Continue from the user's current stage. Respond in the user's language; these English instructions do not require English conversation.
 
 ## Project and artifact layout
 
@@ -22,8 +22,11 @@ Before generating files, read [project-layout.md](references/project-layout.md) 
 | AGV/AMR with an arm | [Mobile manipulators](references/mobile-manipulator.md) |
 | URDF physics with GLB appearance in USD | [USD visual composition](references/urdf-usd-glb-visuals.md) |
 | Isaac import failure or runtime checks | [Isaac and delivery](references/isaac-and-delivery.md) |
+| Flexible cable, spring contact, latch or deformable assembly | [Compliant mechanisms](references/compliant-mechanisms.md) |
+| Insertion, retention, unlock/extraction or misalignment test | [Connector validation](references/connector-validation.md) |
+| Render actual solver records, collision views, close-ups, MP4 or GIF | [Recorded physics and presentation](references/physics-recording-and-presentation.md) |
 
-Read only the references needed for the current task. The bundled CLI tools automate conversion and static packaging. Alignment, mechanism interpretation, and USD composition remain model-specific agent workflows, not universal one-command conversions.
+Read only the references needed for the current task. Bundled helpers cover conversion, static packaging, USD inspection, trajectory integrity and GIF generation. Mechanism interpretation, FEM construction, controller adapters and USD composition remain model-specific work.
 
 ## Establish the sources and mechanism
 
@@ -72,6 +75,10 @@ Mobile assets also need base and arm motion checked separately and together. Cou
 
 If a runtime is unavailable, state the completed validation layer. An XML parser, successful render, process exit code or ZIP CRC alone does not establish simulation readiness.
 
+For connector work, define seating, retention, release, clearance and elastic-return criteria before running; report them separately. Drive the test with the intended fixture forces/constraints, not per-step body or deformable-node pose assignment. A fixture's imposed alignment is part of the result's scope. Read [connector-validation.md](references/connector-validation.md) for the test matrix and [compliant-mechanisms.md](references/compliant-mechanisms.md) for native FEM and equivalent-spring boundaries.
+
+For video work, record solver states first and render those records separately. Keep opaque materials and diagnostic cutaways on the same time/frame mapping. A baked replay is playback, not another physics test. Contact points identify only the entities the runtime actually reports; do not infer per-pad identities from body-pair sensors. Follow [physics-recording-and-presentation.md](references/physics-recording-and-presentation.md).
+
 ### Bundled static checker and packer
 
 Run from this skill's root, or use absolute script paths:
@@ -83,6 +90,12 @@ python scripts/check_pack_urdf.py pack /path/to/robot.urdf --out /project/final_
 ```
 
 `--package` is repeatable. Packing preserves geometry, scales, joints and inertial values while rewriting mesh paths. Automatic packing supports binary STL and primitive-only URDF, not textured/non-STL dependency trees. Expand Xacro first. The checker does not compute assembly transforms, validate physical parameters or test collisions/controllers. ZIPs and detailed reports must stay outside the final asset directory. Existing nonempty outputs, reports and archives are refused; select a clear new destination or resolve the explicitly intended update rather than blindly retrying.
+
+### Simulation evidence helpers
+
+- `scripts/inspect_usd.py`: read-only default-prim, unit, dependency, relationship and authored-physics inventory. Use a Python with `pxr`; it does not run PhysX or certify cooked collision shapes.
+- `scripts/check_sim_record.py`: configurable NumPy NPZ time, pose, quaternion, deformable-node and frame-map checks. It checks record integrity, not mechanical success.
+- `scripts/make_preview_gif.py`: sample an existing rendered video with FFmpeg, create a looping GIF and verify its decoding. It creates no new motion or physics. See the presentation reference for usage and provenance.
 
 ## Final delivery
 

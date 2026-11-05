@@ -1,10 +1,10 @@
-# Robot Asset Toolkit
+# 机器人资产与装配仿真工具箱
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-一套面向机器人资产制作的 Agent Skill 与小型工具集，连接 CAD、可视化装配、URDF 和可运动 USD。
+面向可复用机器人资产、柔性装配测试和真实求解记录展示的 Agent Skill 与专项工具集。覆盖 CAD、可视化装配、URDF、可运动 USD、连接器插拔、柔性排线、弹片与卡扣解锁。
 
-**明确各类数据的职责：CAD/GLB 提供外观，经过核对的机器人描述提供运动与物理定义。**
+**让几何来源、物理定义、求解记录和渲染回放分别可追溯。** 英文展示名为 Robot Asset & Assembly Simulation Toolkit，仓库名和调用名仍为 `robot-asset-toolkit`。
 
 ## 能做什么
 
@@ -17,8 +17,11 @@
 | AGV/AMR＋机械臂 | 整机组合、轮子/升降关节、移动根节点与验证 |
 | URDF＋GLB → 可运动 USD | 保留运动与碰撞，把 GLB 外观和材质挂到实际 link |
 | 最终 URDF 打包 | 静态结构检查、相对网格路径、ZIP 内 STL 格式校验 |
+| 柔性与弹性装配建模 | 刚体、等效弹簧与 FEM 的选择，排线端部连接、卡扣/凸轮联动及工程近似 |
+| 连接器插拔测试 | 到位、未解锁试拉、机构解锁、拔出、回弹和错位碰撞的分项验证 |
+| 真实求解记录展示 | 同步实体材质/透视碰撞、机构特写、便携回放流程和循环 GIF |
 
-这是 **skill＋专项命令行工具**。装配理解、link 映射、动力学与 USD 合成需要按具体模型执行，并非任意机器人一键重建器；不包含导航、控制器或任务调度系统实现。
+装配理解、link 映射、动力学、FEM 建模和测试控制适配器仍需按具体模型执行。附带工具负责静态文件、记录完整性和视频转换，不提供任意连接器通用物理模型、插拔控制器、导航系统或机器人策略。
 
 ## 作为 skill 安装
 
@@ -41,13 +44,16 @@ git clone https://github.com/DuoChen-317/robot-asset-toolkit.git
 用 $robot-asset-toolkit 把这个夹爪安装到已有机械臂 URDF 上。
 用 $robot-asset-toolkit 将小车底盘与机械臂组合成整机描述。
 用 $robot-asset-toolkit 用 URDF 负责物理、GLB 负责外观，生成 Isaac USD。
+用 $robot-asset-toolkit 验证这个连接器和 socket 的插入、保持力与拉柄解锁。
+用 $robot-asset-toolkit 建模柔性排线或弹片，明确 FEM、端部连接与材料近似。
+用 $robot-asset-toolkit 将同一物理求解记录渲染成实体与透视同步画面，再生成 README GIF。
 ```
 
 skill 主体和技术说明使用英文；Agent 应按用户的语言回复，可以继续全程用中文。
 
 ## 直接运行工具
 
-入口工具需要 Python 3.10+，仅使用标准库。转换子进程使用 FreeCAD、Blender 自带的模块，不要求向系统 Python 安装 bpy 或 FreeCAD。
+原有转换/URDF 工具需要 Python 3.10+ 和标准库，转换子进程使用 FreeCAD、Blender 自带模块。新增可选 USD 检查工具需要 `pxr`，NPZ 检查工具需要 NumPy，GIF 工具调用单独安装的 FFmpeg/FFprobe；缺少这些可选依赖不影响 URDF 工具。
 
 ### STEP 转 GLB
 
@@ -99,18 +105,42 @@ ZIP 和详细报告保存在最终资产目录外。输入、输出文件夹沿�
 
 自动打包支持 **二进制 STL 和仅使用基本几何体的 URDF**。ASCII STL 需先用网格工具转换；带图片纹理或其他格式网格的依赖需显式收集。Xacro 先展开。静态检查不验证基本几何体尺寸、真实惯量、mimic 耦合语义、碰撞、控制能力或模拟器兼容性。
 
+### 检查仿真资产、求解记录与预览
+
+```sh
+# 使用带 pxr 的 Python 检查 USD 静态结构。
+python scripts/inspect_usd.py /project/final_usd/module.usd \
+  --package-root /project/final_usd --report /project/_conversion_work/reports/usd.json
+
+# NumPy 记录检查：数组键和顺序由实际求解适配器确定。
+python scripts/check_sim_record.py trajectory.npz \
+  --time-key telemetry --time-column 0 --pose-key body_q --deform-key shell_q
+
+# 从真实渲染帧采样；保留原始 MP4 供高清观看。
+python scripts/make_preview_gif.py insertion.mp4 preview.gif \
+  --ffmpeg /path/to/ffmpeg --ffprobe /path/to/ffprobe --width 960 --fps 8 --colors 128
+```
+
+三个工具都拒绝覆盖已有报告；GIF 工具也拒绝覆盖已有输出。USD 检查覆盖作者定义的物理属性和当前组合，不验证烘焙后的碰撞或实际运动；记录检查不判定到位与保持力；GIF 转换不替代源视频的真实物理来源证明。
+
+具体流程见[柔性与弹性机构](references/compliant-mechanisms.md)、[插拔验证](references/connector-validation.md)、[原生记录与展示](references/physics-recording-and-presentation.md)。这些说明区分实时求解和烘焙回放，要求分项报告验收结果；案例的载荷、材料和显卡选择不作为所有模型的默认值。
+
 ## 依赖与实测范围
 
 | 组件 | 用途与状态 |
 | --- | --- |
 | Python 3.10+ | URDF 静态工具和流程入口；CI 检查 Python 3.10、3.12 |
 | FreeCAD 1.1.1＋Blender 5.1.2 | 已在 Windows 用自动生成的双色、两部件、带嵌套层级 STEP 装配进行端到端测试 |
-| Isaac Sim 5.1 | 技术流程参考了真实机器人的导入与有限步物理验证；仓库未附通用 USD 一键合成器 |
+| Isaac Sim 5.1 | 机器人导入、连接器/排线/FEM 原生求解案例；需核对安装版本的 API 与 beta 设置 |
+| `pxr` / NumPy（可选） | USD 依赖/物理属性和 NPZ 状态完整性检查；可用生成样本脱离 Isaac 测试 |
+| FFmpeg＋FFprobe（可选） | GIF 调色板转换与完整解码检查，仅制作预览时需要 |
 | `omniverse-cad-to-simready` | USD 转换流程可选依赖的外部 skill；其转换器与环境需单独安装 |
 
-FreeCAD 子脚本目前依赖其 `ShapeAppearance` 与 MeshPart 分段接口；遇到未展开的 `App::Link` 会报错，不会静默漏件。其他版本和系统需另行验证。仓库不附带图片、专有 CAD 或厂商机器人模型。
+FreeCAD 子脚本目前依赖其 `ShapeAppearance` 与 MeshPart 分段接口；遇到未展开的 `App::Link` 会报错，不会静默漏件。其他版本和系统需另行验证。仓库不附带专有 CAD、厂商机器人模型或大型仿真缓存。
 
 USD 外观组合覆盖逐 link 几何与 PBR 材质迁移。真正图片贴图还需要 UV、纹理文件和着色器连接验证；历史纯颜色案例不代表所有图片纹理都支持。缺少依赖时应明确报告。
+
+历史 [FFC 与 QSFP 案例](references/case-studies.md)记录独立端口完整循环与工程近似。QSFP 整柜单模块循环通过，但全柜 FEM 回弹和多模块并发仍有未通过项；这些是有明确范围的工程演示，不是标定后的插拔力预测或通用性能基准。案例资产与视频在另一个[仿真作品集](https://github.com/DuoChen-317/simulation-portfolio)中，需相应访问权限；本 skill 不依赖该私有作品集。
 
 ## 目录
 
@@ -118,8 +148,8 @@ USD 外观组合覆盖逐 link 几何与 PBR 材质迁移。真正图片贴图�
 SKILL.md                 Agent 使用入口
 agents/openai.yaml       可选 Codex 显示信息
 references/              按任务读取的技术说明
-scripts/                 STEP 转换子脚本与 URDF 工具
-tests/                   可移植静态测试与 CAD 测试模型生成器
+scripts/                 转换、URDF、USD、求解记录与 GIF 工具
+tests/                   自动生成样本测试，含可选 USD/NumPy/视频检查
 README.md                英文说明
 README.zh-CN.md           中文说明
 LICENSE                  本仓库的 MIT 许可证
@@ -140,7 +170,7 @@ python scripts/step_to_glb.py /path/to/test-work/assembly.step /path/to/test-wor
   --freecad-python /path/to/freecad/python --blender /path/to/blender
 ```
 
-CI 仅运行标准库工具测试，不安装 FreeCAD、Blender 或 Isaac Sim。静态测试覆盖封装/截断 STL、非法关节树、路径解析、防止覆盖，以及打包后几何与安装变换的保留。
+CI 运行标准库工具，并在可选证据工具任务中安装 USD、NumPy 和 FFmpeg；不安装 FreeCAD、Blender 或 Isaac Sim。测试覆盖封装/截断 STL、非法关节树、路径解析、防止覆盖、打包后几何与变换保留，以及 USD 缺失依赖、非法求解记录和 GIF 解码。缺少可选依赖时，相应本地测试会跳过。
 
 欢迎提交可复现的改进和测试。使用可再分发的模型或生成测试样本；不要提交凭据、个人路径、大型 CAD/网格与仿真输出。报告具体软件版本和实际验证范围。
 

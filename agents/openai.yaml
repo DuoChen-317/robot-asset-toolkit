@@ -1,4 +1,4 @@
 interface:
-  display_name: "Robot Asset Toolkit"
-  short_description: "CAD, GLB, URDF and articulated USD asset workflows"
-  default_prompt: "Use $robot-asset-toolkit to inspect my robot assets, perform the requested conversion or assembly, and validate the final deliverable."
+  display_name: "Robot Asset & Assembly Simulation Toolkit"
+  short_description: "Robot assets, compliant assembly tests and physics replay"
+  default_prompt: "Use $robot-asset-toolkit to prepare my assets, validate the requested assembly physics, and present the recorded results with clear evidence."

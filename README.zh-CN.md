@@ -6,6 +6,22 @@
 
 **让几何来源、物理定义、求解记录和渲染回放分别可追溯。** 英文展示名为 Robot Asset & Assembly Simulation Toolkit，仓库名和调用名仍为 `robot-asset-toolkit`。
 
+## 仿真效果展示
+
+以下 GIF 来自真实 PhysX 求解记录在 Isaac Sim 中的渲染。本公开仓库分享 skill、通用辅助工具和展示媒体。**具体 USD/CAD 资产、案例仿真工程和求解缓存仍保持私有，不包含在本仓库中。**
+
+### 软排线完整插拔
+
+![原生 PhysX 软排线插入、锁盖与拔出](media/ffc40-insertion.gif)
+
+排线全景与插座特写展示插入、合盖锁紧、试拉、开盖解锁和拔出，自由尾段由原生 FEM 求解。约 24 秒展示对应 1.22 秒物理过程。
+
+### QSFP28 光模块：实体与透视同步展示
+
+![QSFP28 实体材质、透视碰撞及三个特写同步插拔](media/qsfp28-insertion.gif)
+
+左侧为机柜中的非透视材质画面；右侧为同步碰撞透视，附卡扣、板端触点和 EMI 弹片三个特写。两侧使用同一份单口实际求解记录。约 20 秒展示对应 0.45 秒物理过程，机柜提供外观背景。
+
 ## 能做什么
 
 | 流程 | 结果 |
@@ -140,7 +156,7 @@ FreeCAD 子脚本目前依赖其 `ShapeAppearance` 与 MeshPart 分段接口；�
 
 USD 外观组合覆盖逐 link 几何与 PBR 材质迁移。真正图片贴图还需要 UV、纹理文件和着色器连接验证；历史纯颜色案例不代表所有图片纹理都支持。缺少依赖时应明确报告。
 
-历史 [FFC 与 QSFP 案例](references/case-studies.md)记录独立端口完整循环与工程近似。QSFP 整柜单模块循环通过，但全柜 FEM 回弹和多模块并发仍有未通过项；这些是有明确范围的工程演示，不是标定后的插拔力预测或通用性能基准。案例资产与视频在另一个[仿真作品集](https://github.com/DuoChen-317/simulation-portfolio)中，需相应访问权限；本 skill 不依赖该私有作品集。
+历史 [FFC 与 QSFP 案例](references/case-studies.md)记录独立端口完整循环与工程近似。QSFP 整柜单模块循环通过，但全柜 FEM 回弹和多模块并发仍有未通过项；这些是有明确范围的工程演示，不是标定后的插拔力预测或通用性能基准。具体案例资产包继续保持私有，本 skill 不依赖它们。
 
 ## 目录
 
@@ -150,6 +166,7 @@ agents/openai.yaml       可选 Codex 显示信息
 references/              按任务读取的技术说明
 scripts/                 转换、URDF、USD、求解记录与 GIF 工具
 tests/                   自动生成样本测试，含可选 USD/NumPy/视频检查
+media/                   仅包含展示 GIF，不含仿真资产包
 README.md                英文说明
 README.zh-CN.md           中文说明
 LICENSE                  本仓库的 MIT 许可证

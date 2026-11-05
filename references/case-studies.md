@@ -44,4 +44,4 @@ A whole-board/individual-pad comparison showed no demonstrated large performance
 
 The same 0.45-second detailed trajectory later drove both opaque full-cabinet rendering and diagnostic collision views, with latch/contact/EMI close-ups. State hashes and a common frame map established synchronization. The 20-second video and looping GIF were recorded-state presentations, not new full-rack physics solves. Full-cabinet appearance alone did not change the original single-port validation scope.
 
-Case assets and media are maintained separately in the [simulation portfolio](https://github.com/DuoChen-317/simulation-portfolio); access may be restricted. This skill is self-contained and does not require that repository. It redistributes neither the case CAD nor vendor specifications, and does not extend their licenses.
+Selected rendered GIFs appear in the repository's README for demonstration. The underlying case assets, simulation projects and solver records remain private. This skill is self-contained and does not require those packages. Publishing the demonstration media does not release or extend licenses for the underlying CAD/USD or vendor specifications.

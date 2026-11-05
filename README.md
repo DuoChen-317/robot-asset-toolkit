@@ -6,6 +6,22 @@ An agent skill and focused tools for preparing reusable robot assets, building c
 
 **Keep geometry sources, physics definitions, solved-state evidence and rendered playback traceable.** The repository name and skill invocation stay `robot-asset-toolkit`.
 
+## Simulation demonstrations
+
+These GIFs show real Isaac Sim renders of recorded PhysX results. This public repository shares the skill, general-purpose helpers and demonstration media. **The underlying USD/CAD assets, case-specific simulation projects and solver caches remain private and are not included.**
+
+### Flexible FFC insertion and extraction
+
+![Native PhysX flexible FFC insertion, lid locking and extraction](media/ffc40-insertion.gif)
+
+The cable overview and socket close-up show insertion, lid locking, a retention pull, unlocking and extraction. Native FEM drives the flexible tail. The approximately 24-second presentation comes from a 1.22-second physical simulation.
+
+### QSFP28 transceiver: material and collision views
+
+![QSFP28 insertion with synchronized opaque materials, collision X-ray and three close-ups](media/qsfp28-insertion.gif)
+
+Left: an opaque material view in the cabinet. Right: synchronized collision X-ray with latch, paddle-card contact and EMI-finger close-ups. Both views use the same recorded single-port solve. The approximately 20-second presentation comes from 0.45 seconds of physical simulation; the cabinet supplies visual context.
+
 ## What it does
 
 | Workflow | Delivery |
@@ -140,7 +156,7 @@ The FreeCAD worker currently expects its `ShapeAppearance` and segmented `MeshPa
 
 USD appearance composition covers per-link geometry and PBR material workflows. Image textures additionally require UVs, files and shader-network validation; the historical colour-only cases do not establish universal image-texture support. Missing dependencies must be reported, not silently substituted.
 
-Historical [FFC and QSFP case notes](references/case-studies.md) document full standalone cycles and their approximations. A single-module full-rack QSFP cycle passed, while return of all rack FEM regions and simultaneous multi-module operation retained failures. These are scoped engineering demonstrations, not calibrated force predictions or universal benchmarks. The separate [simulation portfolio](https://github.com/DuoChen-317/simulation-portfolio) contains case assets/media where access is granted; it is not a dependency of this skill.
+Historical [FFC and QSFP case notes](references/case-studies.md) document full standalone cycles and their approximations. A single-module full-rack QSFP cycle passed, while return of all rack FEM regions and simultaneous multi-module operation retained failures. These are scoped engineering demonstrations, not calibrated force predictions or universal benchmarks. The case asset packages remain private; this skill does not require access to them.
 
 ## Repository layout
 
@@ -150,6 +166,7 @@ agents/openai.yaml       Optional Codex UI metadata
 references/              Task-specific technical guidance
 scripts/                 Conversion, URDF, USD, record and GIF helpers
 tests/                   Generated-fixture tests, with optional USD/NumPy/media checks
+media/                   Demonstration GIFs only; no simulation asset packages
 README.md                English documentation
 README.zh-CN.md           Chinese documentation
 LICENSE                  MIT license for this repository

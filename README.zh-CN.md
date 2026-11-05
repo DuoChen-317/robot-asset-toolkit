@@ -1,28 +1,70 @@
-# 机器人资产与装配仿真工具箱
+# Robot Asset Toolkit
+
+### 机器人资产与装配仿真工具箱
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-面向可复用机器人资产、柔性装配测试和真实求解记录展示的 Agent Skill 与专项工具集。覆盖 CAD、可视化装配、URDF、可运动 USD、连接器插拔、柔性排线、弹片与卡扣解锁。
+将 CAD 与机器人装配整理成可复用资产，验证柔性机构与连接器插拔，并展示真实求解记录。
 
-**让几何来源、物理定义、求解记录和渲染回放分别可追溯。** 英文展示名为 Robot Asset & Assembly Simulation Toolkit，仓库名和调用名仍为 `robot-asset-toolkit`。
+**几何来源、物理定义、求解记录与渲染回放分别可追溯。** 仓库名和 skill 调用名均为 `robot-asset-toolkit`。
+
+[效果展示](#仿真效果展示) · [安装与调用](#快速开始) · [能力范围](#能力范围) · [命令参考](#命令参考) · [依赖与实测](#依赖与实测范围)
+
+| 方向 | 主要用途 |
+| --- | --- |
+| **机器人资产** | STEP → GLB、装配对齐、URDF 构建与打包 |
+| **装配仿真** | 柔性排线、弹片、卡扣及连接器插拔的建模与验证流程 |
+| **求解记录展示** | 状态记录检查、同步实体/碰撞视图与视频转 GIF |
+
+> **公开范围：** 本仓库提供 Agent Skill、通用辅助脚本、技术说明和演示 GIF。案例中的 USD/CAD 模型、仿真工程及求解缓存保持私有，不提供下载；你可以使用自己的资产运行相应工具和流程。
 
 ## 仿真效果展示
 
-以下 GIF 来自真实 PhysX 求解记录在 Isaac Sim 中的渲染。本公开仓库分享 skill、通用辅助工具和展示媒体。**具体 USD/CAD 资产、案例仿真工程和求解缓存仍保持私有，不包含在本仓库中。**
+以下两段演示均由 PhysX 实际求解记录在 Isaac Sim 中渲染。
 
-### 软排线完整插拔
+### FFC 软排线：插入、锁紧与拔出
 
 ![原生 PhysX 软排线插入、锁盖与拔出](media/ffc40-insertion.gif)
 
 排线全景与插座特写展示插入、合盖锁紧、试拉、开盖解锁和拔出，自由尾段由原生 FEM 求解。约 24 秒展示对应 1.22 秒物理过程。
 
-### QSFP28 光模块：实体与透视同步展示
+### QSFP28 光模块：实体材质与碰撞透视
 
 ![QSFP28 实体材质、透视碰撞及三个特写同步插拔](media/qsfp28-insertion.gif)
 
 左侧为机柜中的非透视材质画面；右侧为同步碰撞透视，附卡扣、板端触点和 EMI 弹片三个特写。两侧使用同一份单口实际求解记录。约 20 秒展示对应 0.45 秒物理过程，机柜提供外观背景。
 
-## 能做什么
+## 快速开始
+
+### 安装
+
+克隆仓库后，将整个目录放入或链接到所用 Agent 支持的 skill 发现目录。`SKILL.md`、`agents/`、`references/` 和 `scripts/` 保持在一起；具体发现路径以当前 Agent 的安装说明为准。
+
+```sh
+git clone https://github.com/DuoChen-317/robot-asset-toolkit.git
+```
+
+在 Codex 中也可以请求安装：
+
+```text
+使用 $skill-installer 安装 https://github.com/DuoChen-317/robot-asset-toolkit 中的 skill。
+```
+
+### 调用示例
+
+```text
+用 $robot-asset-toolkit 把这个 STEP 装配高精度转成 GLB。
+用 $robot-asset-toolkit 把这个夹爪安装到已有机械臂 URDF 上。
+用 $robot-asset-toolkit 将小车底盘与机械臂组合成整机描述。
+用 $robot-asset-toolkit 用 URDF 负责物理、GLB 负责外观，生成 Isaac USD。
+用 $robot-asset-toolkit 验证这个连接器和 socket 的插入、保持力与拉柄解锁。
+用 $robot-asset-toolkit 建模柔性排线或弹片，明确 FEM、端部连接与材料近似。
+用 $robot-asset-toolkit 将同一物理求解记录渲染成实体与透视同步画面，再生成 README GIF。
+```
+
+skill 主体和技术说明使用英文；Agent 应按用户的语言回复，可以继续全程用中文。
+
+## 能力范围
 
 | 流程 | 结果 |
 | --- | --- |
@@ -39,39 +81,12 @@
 
 装配理解、link 映射、动力学、FEM 建模和测试控制适配器仍需按具体模型执行。附带工具负责静态文件、记录完整性和视频转换，不提供任意连接器通用物理模型、插拔控制器、导航系统或机器人策略。
 
-## 作为 skill 安装
-
-克隆仓库后，将整个目录放入或链接到所用 Agent 支持的 skill 发现目录。`SKILL.md`、`agents/`、`references/` 和 `scripts/` 保持在一起；具体发现路径以当前 Agent 的安装说明为准。
-
-```sh
-git clone https://github.com/DuoChen-317/robot-asset-toolkit.git
-```
-
-在 Codex 中也可以请求安装：
-
-```text
-使用 $skill-installer 安装 https://github.com/DuoChen-317/robot-asset-toolkit 中的 skill。
-```
-
-调用示例：
-
-```text
-用 $robot-asset-toolkit 把这个 STEP 装配高精度转成 GLB。
-用 $robot-asset-toolkit 把这个夹爪安装到已有机械臂 URDF 上。
-用 $robot-asset-toolkit 将小车底盘与机械臂组合成整机描述。
-用 $robot-asset-toolkit 用 URDF 负责物理、GLB 负责外观，生成 Isaac USD。
-用 $robot-asset-toolkit 验证这个连接器和 socket 的插入、保持力与拉柄解锁。
-用 $robot-asset-toolkit 建模柔性排线或弹片，明确 FEM、端部连接与材料近似。
-用 $robot-asset-toolkit 将同一物理求解记录渲染成实体与透视同步画面，再生成 README GIF。
-```
-
-skill 主体和技术说明使用英文；Agent 应按用户的语言回复，可以继续全程用中文。
-
-## 直接运行工具
+## 命令参考
 
 原有转换/URDF 工具需要 Python 3.10+ 和标准库，转换子进程使用 FreeCAD、Blender 自带模块。新增可选 USD 检查工具需要 `pxr`，NPZ 检查工具需要 NumPy，GIF 工具调用单独安装的 FFmpeg/FFprobe；缺少这些可选依赖不影响 URDF 工具。
 
-### STEP 转 GLB
+<details>
+<summary>STEP → GLB：命令、PowerShell 示例与转换范围</summary>
 
 分别安装 FreeCAD 和 Blender，并传入实际可执行文件路径：
 
@@ -97,7 +112,10 @@ python scripts/step_to_glb.py 'D:/models/input.step' 'D:/exports/output.glb' `
 
 `0.01 mm` 和 `5°` 是可调整的起点，**不是全模型曲面误差的实测保证**。回读检查覆盖部件数、面数、实际顶点包围盒、层级、节点变换与可读取材质颜色。详见[转换细节与限制](references/step-to-glb.md)。
 
-### 检查 URDF
+</details>
+
+<details>
+<summary>URDF 静态检查：命令与 ROS 包路径</summary>
 
 ```sh
 python scripts/check_pack_urdf.py validate /path/to/robot.urdf
@@ -105,7 +123,10 @@ python scripts/check_pack_urdf.py validate /path/to/robot.urdf \
   --package robot_description=/path/to/robot_description
 ```
 
-### 整理便携 URDF 包
+</details>
+
+<details>
+<summary>URDF 便携打包：命令、输出结构与支持范围</summary>
 
 ```sh
 python scripts/check_pack_urdf.py pack /path/to/robot.urdf \
@@ -121,7 +142,10 @@ ZIP 和详细报告保存在最终资产目录外。输入、输出文件夹沿�
 
 自动打包支持 **二进制 STL 和仅使用基本几何体的 URDF**。ASCII STL 需先用网格工具转换；带图片纹理或其他格式网格的依赖需显式收集。Xacro 先展开。静态检查不验证基本几何体尺寸、真实惯量、mimic 耦合语义、碰撞、控制能力或模拟器兼容性。
 
-### 检查仿真资产、求解记录与预览
+</details>
+
+<details>
+<summary>USD、求解记录与 GIF：可选检查工具和使用范围</summary>
 
 ```sh
 # 使用带 pxr 的 Python 检查 USD 静态结构。
@@ -141,6 +165,8 @@ python scripts/make_preview_gif.py insertion.mp4 preview.gif \
 
 具体流程见[柔性与弹性机构](references/compliant-mechanisms.md)、[插拔验证](references/connector-validation.md)、[原生记录与展示](references/physics-recording-and-presentation.md)。这些说明区分实时求解和烘焙回放，要求分项报告验收结果；案例的载荷、材料和显卡选择不作为所有模型的默认值。
 
+</details>
+
 ## 依赖与实测范围
 
 | 组件 | 用途与状态 |
@@ -152,11 +178,16 @@ python scripts/make_preview_gif.py insertion.mp4 preview.gif \
 | FFmpeg＋FFprobe（可选） | GIF 调色板转换与完整解码检查，仅制作预览时需要 |
 | `omniverse-cad-to-simready` | USD 转换流程可选依赖的外部 skill；其转换器与环境需单独安装 |
 
+<details>
+<summary>版本兼容性、验证边界与案例状态</summary>
+
 FreeCAD 子脚本目前依赖其 `ShapeAppearance` 与 MeshPart 分段接口；遇到未展开的 `App::Link` 会报错，不会静默漏件。其他版本和系统需另行验证。仓库不附带专有 CAD、厂商机器人模型或大型仿真缓存。
 
 USD 外观组合覆盖逐 link 几何与 PBR 材质迁移。真正图片贴图还需要 UV、纹理文件和着色器连接验证；历史纯颜色案例不代表所有图片纹理都支持。缺少依赖时应明确报告。
 
 历史 [FFC 与 QSFP 案例](references/case-studies.md)记录独立端口完整循环与工程近似。QSFP 整柜单模块循环通过，但全柜 FEM 回弹和多模块并发仍有未通过项；这些是有明确范围的工程演示，不是标定后的插拔力预测或通用性能基准。具体案例资产包继续保持私有，本 skill 不依赖它们。
+
+</details>
 
 ## 目录
 
@@ -179,6 +210,9 @@ python -m unittest discover -s tests -v
 python -m compileall -q scripts
 ```
 
+<details>
+<summary>可选 CAD 端到端测试</summary>
+
 可选 CAD 集成测试：用 FreeCAD Python 生成测试装配，再用转换入口写到新的输出目录。
 
 ```sh
@@ -186,6 +220,8 @@ python -m compileall -q scripts
 python scripts/step_to_glb.py /path/to/test-work/assembly.step /path/to/test-work/assembly.glb \
   --freecad-python /path/to/freecad/python --blender /path/to/blender
 ```
+
+</details>
 
 CI 运行标准库工具，并在可选证据工具任务中安装 USD、NumPy 和 FFmpeg；不安装 FreeCAD、Blender 或 Isaac Sim。测试覆盖封装/截断 STL、非法关节树、路径解析、防止覆盖、打包后几何与变换保留，以及 USD 缺失依赖、非法求解记录和 GIF 解码。缺少可选依赖时，相应本地测试会跳过。
 

@@ -1,28 +1,70 @@
-# Robot Asset & Assembly Simulation Toolkit
+# Robot Asset Toolkit
+
+### Robot assets, assembly simulation & recorded physics
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-An agent skill and focused tools for preparing reusable robot assets, building compliant assembly tests, and presenting recorded physics. Covers CAD, visual assemblies, URDF, articulated USD, connector insertion, flexible cables, spring fingers and latch release.
+An agent skill and focused tools for preparing robot assets, validating compliant assembly workflows, and presenting recorded physics.
 
-**Keep geometry sources, physics definitions, solved-state evidence and rendered playback traceable.** The repository name and skill invocation stay `robot-asset-toolkit`.
+**Keep geometry sources, physics definitions, solved-state evidence and rendered playback traceable.** Repository and skill invocation: `robot-asset-toolkit`.
+
+[Demos](#simulation-demonstrations) · [Quick start](#quick-start) · [Workflows](#workflows) · [CLI reference](#cli-reference) · [Dependencies](#dependencies-and-tested-scope)
+
+| Focus | What you can do |
+| --- | --- |
+| **Robot assets** | Convert STEP → GLB, align assemblies, build and package URDF |
+| **Assembly simulation** | Follow modeling and validation workflows for flexible cables, spring fingers, latches and connector insertion |
+| **Recorded physics** | Check state records, prepare synchronized material/collision views, and convert videos to GIFs |
+
+> **Public scope:** This repository includes the agent skill, general-purpose helpers, technical references and demonstration GIFs. The case-specific USD/CAD models, simulation projects and solver caches remain private and are not downloadable. Use your own assets with the published tools and workflows.
 
 ## Simulation demonstrations
 
-These GIFs show real Isaac Sim renders of recorded PhysX results. This public repository shares the skill, general-purpose helpers and demonstration media. **The underlying USD/CAD assets, case-specific simulation projects and solver caches remain private and are not included.**
+Both demonstrations render recorded PhysX results in Isaac Sim.
 
-### Flexible FFC insertion and extraction
+### Flexible FFC: insert, lock and extract
 
 ![Native PhysX flexible FFC insertion, lid locking and extraction](media/ffc40-insertion.gif)
 
 The cable overview and socket close-up show insertion, lid locking, a retention pull, unlocking and extraction. Native FEM drives the flexible tail. The approximately 24-second presentation comes from a 1.22-second physical simulation.
 
-### QSFP28 transceiver: material and collision views
+### QSFP28: material and collision views
 
 ![QSFP28 insertion with synchronized opaque materials, collision X-ray and three close-ups](media/qsfp28-insertion.gif)
 
 Left: an opaque material view in the cabinet. Right: synchronized collision X-ray with latch, paddle-card contact and EMI-finger close-ups. Both views use the same recorded single-port solve. The approximately 20-second presentation comes from 0.45 seconds of physical simulation; the cabinet supplies visual context.
 
-## What it does
+## Quick start
+
+### Install
+
+Clone the repository, then place or link its whole directory in a skill discovery location supported by your agent. The directory contains `SKILL.md`, `agents/`, `references/` and `scripts/`; keep them together. Follow your agent's current installation documentation for the exact discovery path.
+
+```sh
+git clone https://github.com/DuoChen-317/robot-asset-toolkit.git
+```
+
+In Codex, you can also ask the skill installer:
+
+```text
+Use $skill-installer to install the skill from https://github.com/DuoChen-317/robot-asset-toolkit.
+```
+
+### Example requests
+
+```text
+Use $robot-asset-toolkit to convert this STEP assembly to a high-fidelity GLB.
+Use $robot-asset-toolkit to mount this gripper on my existing robot URDF.
+Use $robot-asset-toolkit to combine this mobile base and arm into one robot description.
+Use $robot-asset-toolkit to create an Isaac USD using my URDF for physics and GLB for appearance.
+Use $robot-asset-toolkit to validate insertion, retention and pull-tab release for my connector and socket.
+Use $robot-asset-toolkit to model a flexible cable or spring finger with explicit FEM and attachment assumptions.
+Use $robot-asset-toolkit to show the same recorded physics in material and collision views, then make a README GIF.
+```
+
+The skill instructions are English; the agent should respond in the user's language.
+
+## Workflows
 
 | Workflow | Delivery |
 | --- | --- |
@@ -39,39 +81,12 @@ Left: an opaque material view in the cabinet. Right: synchronized collision X-ra
 
 Assembly interpretation, link mapping, dynamics, FEM construction and test-controller adapters require model-specific work. Bundled helpers check files and records and convert video; they do not supply a universal physical model, insertion controller, navigation stack or robot policy.
 
-## Install as a skill
-
-Clone the repository, then place or link its whole directory in a skill discovery location supported by your agent. The directory contains `SKILL.md`, `agents/`, `references/` and `scripts/`; keep them together. Follow your agent's current installation documentation for the exact discovery path.
-
-```sh
-git clone https://github.com/DuoChen-317/robot-asset-toolkit.git
-```
-
-In Codex, you can also ask the skill installer:
-
-```text
-Use $skill-installer to install the skill from https://github.com/DuoChen-317/robot-asset-toolkit.
-```
-
-Example requests:
-
-```text
-Use $robot-asset-toolkit to convert this STEP assembly to a high-fidelity GLB.
-Use $robot-asset-toolkit to mount this gripper on my existing robot URDF.
-Use $robot-asset-toolkit to combine this mobile base and arm into one robot description.
-Use $robot-asset-toolkit to create an Isaac USD using my URDF for physics and GLB for appearance.
-Use $robot-asset-toolkit to validate insertion, retention and pull-tab release for my connector and socket.
-Use $robot-asset-toolkit to model a flexible cable or spring finger with explicit FEM and attachment assumptions.
-Use $robot-asset-toolkit to show the same recorded physics in material and collision views, then make a README GIF.
-```
-
-The skill instructions are English; the agent should respond in the user's language.
-
-## Run the tools directly
+## CLI reference
 
 The original conversion/URDF tools use Python 3.10+ and the standard library. Runtime-specific conversion workers use modules bundled with FreeCAD and Blender. The optional USD inspector requires `pxr`, the NPZ checker requires NumPy, and the GIF helper calls separately installed FFmpeg/FFprobe. Missing optional dependencies do not affect the URDF tools.
 
-### STEP to GLB
+<details>
+<summary>STEP → GLB: commands, PowerShell example and conversion scope</summary>
 
 Install FreeCAD and Blender separately and supply their actual executable paths:
 
@@ -97,7 +112,10 @@ The final output directory contains only verified GLBs. Conversion and validatio
 
 `0.01 mm` and `5°` are configurable starting settings, **not a measured global surface-error guarantee**. Round-trip checks cover parts, triangles, actual vertex bounds, hierarchy, node transforms and readable material colours. See [conversion details and limitations](references/step-to-glb.md).
 
-### Check a URDF
+</details>
+
+<details>
+<summary>URDF validation: commands and ROS package paths</summary>
 
 ```sh
 python scripts/check_pack_urdf.py validate /path/to/robot.urdf
@@ -105,7 +123,10 @@ python scripts/check_pack_urdf.py validate /path/to/robot.urdf \
   --package robot_description=/path/to/robot_description
 ```
 
-### Build a portable URDF bundle
+</details>
+
+<details>
+<summary>Portable URDF bundle: command, outputs and supported formats</summary>
 
 ```sh
 python scripts/check_pack_urdf.py pack /path/to/robot.urdf \
@@ -121,7 +142,10 @@ ZIP archives and detailed reports stay outside the final asset directory. Reuse 
 
 Automatic packing supports **binary STL and primitive-only URDF**. ASCII STL must first be converted with a mesh loader. Textured/non-STL dependency trees require explicit packaging. Expand Xacro before running the checker. Primitive dimensions, mass/inertia correctness, mimic semantics, collisions, controller behaviour and simulator compatibility are outside its static checks.
 
-### Inspect simulation assets, records and previews
+</details>
+
+<details>
+<summary>USD, simulation records and GIFs: optional inspection tools and scope</summary>
 
 ```sh
 # Static USD inspection using a Python environment with pxr.
@@ -141,6 +165,8 @@ All three helpers refuse existing report destinations; the GIF tool also refuses
 
 The skill's model-specific workflows cover [compliant mechanisms](references/compliant-mechanisms.md), [connector validation](references/connector-validation.md), and [native records and presentation](references/physics-recording-and-presentation.md). They separate live solving from baked replay, report independent acceptance criteria and keep case-specific forces, materials and GPU choices out of universal defaults.
 
+</details>
+
 ## Dependencies and tested scope
 
 | Component | Purpose / status |
@@ -152,11 +178,16 @@ The skill's model-specific workflows cover [compliant mechanisms](references/com
 | FFmpeg + FFprobe (optional) | GIF palette conversion and full-frame decode checks; required only for previews |
 | `omniverse-cad-to-simready` | Optional external skill for USD conversion workflows; install its own converters/dependencies separately |
 
+<details>
+<summary>Compatibility, validation boundaries and case status</summary>
+
 The FreeCAD worker currently expects its `ShapeAppearance` and segmented `MeshPart` APIs. It refuses retained `App::Link` instances instead of silently dropping them. Other runtime versions/platforms need verification. Proprietary CAD, vendor robot assets and large simulation caches are not bundled.
 
 USD appearance composition covers per-link geometry and PBR material workflows. Image textures additionally require UVs, files and shader-network validation; the historical colour-only cases do not establish universal image-texture support. Missing dependencies must be reported, not silently substituted.
 
 Historical [FFC and QSFP case notes](references/case-studies.md) document full standalone cycles and their approximations. A single-module full-rack QSFP cycle passed, while return of all rack FEM regions and simultaneous multi-module operation retained failures. These are scoped engineering demonstrations, not calibrated force predictions or universal benchmarks. The case asset packages remain private; this skill does not require access to them.
+
+</details>
 
 ## Repository layout
 
@@ -179,6 +210,9 @@ python -m unittest discover -s tests -v
 python -m compileall -q scripts
 ```
 
+<details>
+<summary>Optional CAD integration test</summary>
+
 For the optional CAD integration test, use FreeCAD's Python to generate a fixture, then run the converter against that fixture in a new output directory:
 
 ```sh
@@ -186,6 +220,8 @@ For the optional CAD integration test, use FreeCAD's Python to generate a fixtur
 python scripts/step_to_glb.py /path/to/test-work/assembly.step /path/to/test-work/assembly.glb \
   --freecad-python /path/to/freecad/python --blender /path/to/blender
 ```
+
+</details>
 
 CI exercises the standard-library tools and an optional-evidence job with USD, NumPy and FFmpeg. It does not install FreeCAD, Blender or Isaac Sim. Tests cover malformed/wrapped STL, invalid joint trees, path resolution, output protection, packed geometry/transform preservation, broken USD dependencies, invalid state records and decoded GIF generation. Optional tests skip locally when their dependencies are unavailable.
 

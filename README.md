@@ -16,8 +16,6 @@ An agent skill and focused tools for preparing robot assets, validating complian
 | **Assembly simulation** | Follow modeling and validation workflows for flexible cables, spring fingers, latches and connector insertion |
 | **Recorded physics** | Check state records, prepare synchronized material/collision views, and convert videos to GIFs |
 
-> **Public scope:** This repository includes the agent skill, general-purpose helpers, technical references and demonstration GIFs. The case-specific USD/CAD models, simulation projects and solver caches remain private and are not downloadable. Use your own assets with the published tools and workflows.
-
 ## Simulation demonstrations
 
 Both demonstrations render recorded PhysX results in Isaac Sim.
